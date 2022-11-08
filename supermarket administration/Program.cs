@@ -13,8 +13,11 @@ namespace supermarket_administration
             Cashbox cashbox = new Cashbox();
             Product[] optionsProducts = new Product[] { new Product("молоко", 68), new Product("хлеб", 16), new Product("сыр", 120), new Product("сливки", 250), new Product("сметана", 82), new Product("шоколад", 65) };
             Random random = new Random();
-            int productsCount = random.Next(2, optionsProducts.Length + 1);
-            int clientsCount = random.Next(3, 11);
+            int minProductsCount = 2;
+            int productsCount = random.Next(minProductsCount, optionsProducts.Length + 1);
+            int minClientsCount = 3;
+            int maxClientsCount = 11;
+            int clientsCount = random.Next(minClientsCount, maxClientsCount);
 
             for(int i = 0; i < clientsCount; i++)
             {
@@ -61,12 +64,11 @@ namespace supermarket_administration
             {
                 Client servicedClient = _clients.Peek();
                 bool canPay = false;
-
                 clientIndex++;
 
                 while (canPay == false)
                 {
-                    int totalSum = CalculatePurchaseAmount(servicedClient.Products);
+                    int totalSum = servicedClient.CalculatePurchaseAmount();
 
                     Console.Clear();
 
@@ -81,6 +83,7 @@ namespace supermarket_administration
                     else
                     {
                         canPay = true;
+
                         if(totalSum == 0)
                         {
                             Console.WriteLine("Клиент не смог ничего оплатить и ушел");
@@ -123,23 +126,35 @@ namespace supermarket_administration
 
     class Client
     {
-        public  List<Product> Products { get; private set; }
+        private List<Product> _products;
         public int Money { get; private set; }
 
         public Client (List<Product> products, int money)
         {
-            Products = products;
+            _products = products;
             Money = money;
         }
 
         public void RemoveRandomProduct ()
         {
             Random random = new Random();
-            int productIndex = random.Next(0, Products.Count - 1);
+            int productIndex = random.Next(0, _products.Count - 1);
 
-            Console.WriteLine($"Клиент выложил {Products[productIndex].Title}");
+            Console.WriteLine($"Клиент выложил {_products[productIndex].Title}");
 
-            Products.RemoveAt(productIndex);
+            _products.RemoveAt(productIndex);
+        }
+
+        public int CalculatePurchaseAmount()
+        {
+            int totalSum = 0;
+
+            foreach (var product in _products)
+            {
+                totalSum += product.Price;
+            }
+
+            return totalSum;
         }
 
         public void Pay(int prise)
